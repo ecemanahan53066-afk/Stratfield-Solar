@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Solar Installation System Calculator & BOQ</title>
+<style>
+:root{--navy:#12304a;--blue:#176b87;--teal:#1b8a7a;--bg:#f3f6f8;--line:#d8e1e7;--text:#1e2b35;--muted:#62717d;--orange:#f0a43a}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font:15px/1.45 system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}
+header{background:linear-gradient(120deg,var(--navy),var(--blue));color:white;padding:28px 20px}
+header .wrap,main{max-width:1200px;margin:auto}h1{font-size:clamp(1.5rem,3vw,2.25rem);margin:0 0 6px}header p{margin:0;color:#dbeaf0}
+main{padding:22px 16px 40px}.layout{display:grid;grid-template-columns:minmax(280px,360px) 1fr;gap:18px;align-items:start}
+.panel{background:white;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:0 3px 12px #16364a0b}
+h2{font-size:1.08rem;color:var(--navy);margin:0 0 14px}h3{font-size:1rem;margin:18px 0 9px;color:var(--navy)}
+label{display:block;font-size:.84rem;font-weight:650;margin:11px 0 5px;color:#354b5a}
+input,select{width:100%;padding:10px 11px;border:1px solid #c7d4dc;border-radius:8px;font:inherit;background:white;color:var(--text)}
+input:focus,select:focus{outline:2px solid #a9d9e6;border-color:var(--blue)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}.hint{font-size:.78rem;color:var(--muted);margin-top:4px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:16px}
+button{border:0;border-radius:8px;padding:10px 14px;font:inherit;font-weight:700;cursor:pointer}
+.primary{background:var(--teal);color:white}.secondary{background:#e7eef2;color:var(--navy)}.dark{background:var(--navy);color:white}
+.metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+.metric{background:#f8fbfc;border:1px solid var(--line);border-radius:10px;padding:13px}
+.metric .label{font-size:.78rem;color:var(--muted)}.metric .value{font-size:1.25rem;font-weight:800;color:var(--navy);margin-top:3px}
+.note{background:#fff8e9;border-left:4px solid var(--orange);padding:11px 13px;border-radius:7px;font-size:.85rem;color:#60491f;margin:14px 0}
+.tablewrap{overflow-x:auto;border:1px solid var(--line);border-radius:9px}
+table{border-collapse:collapse;width:100%;font-size:.86rem;min-width:650px}th,td{padding:9px 10px;text-align:left;border-bottom:1px solid #e7edf0}th{background:#edf3f6;color:#304a5a;font-size:.78rem;text-transform:uppercase;letter-spacing:.03em}td.num,th.num{text-align:right;white-space:nowrap}tfoot td{font-weight:800;background:#f7fafb}.subtotal{font-weight:800}
+.small{font-size:.8rem;color:var(--muted)}.section-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.hidden{display:none}.checkrow{display:flex;gap:8px;align-items:center;margin-top:12px}.checkrow input{width:auto}
+footer{max-width:1200px;margin:auto;padding:0 16px 26px;color:var(--muted);font-size:.8rem}
+@media(max-width:900px){.layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:480px){main{padding:12px 10px 28px}.panel{padding:14px}.grid2{gap:8px}.metric .value{font-size:1.05rem}}
+.quote-top{display:flex;justify-content:space-between;gap:18px;align-items:flex-start}.quote-panel hr{border:0;border-top:1px solid var(--line);margin:14px 0}.quote-panel ul{padding-left:22px}.quote-panel li{margin:5px 0}.signature{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:32px 0 18px;font-size:.85rem}
+@media print{body{background:white}header{padding:14px}.layout{display:block}.layout>aside{display:none}.panel{box-shadow:none;border:0;padding:0}.metrics{grid-template-columns:repeat(4,1fr)}button,.actions{display:none!important}main{padding:10px}.note{break-inside:avoid}table{font-size:10pt}footer{padding-top:12px}
+body.quote-print header,body.quote-print .layout>section>.panel:not(.quote-panel),body.quote-print .layout>aside,body.quote-print footer{display:none!important}
+body.quote-print .layout>section>.quote-panel{display:block!important}
+body.quote-print header{display:none!important}body.quote-print .layout{display:block}body.quote-print main{max-width:none;margin:0;padding:0}
+.quote-panel{break-inside:auto}.quote-top{break-inside:avoid}.quote-panel table{min-width:0}.signature{break-inside:avoid}}
+
+</style>
+</head>
+<body>
+<header><div class="wrap"><h1>Solar Installation Calculator</h1><p>Preliminary system sizing, bill of quantities (BOQ), and budget estimate · PHP</p></div></header>
+<main>
+<div class="layout">
+<aside class="panel">
+<h2>1. Project inputs</h2>
+<label for="project">Project / customer name</label><input id="project" value="Residential Solar Project" />
+<div class="grid2">
+<div><label for="load">Average daily energy use (kWh)</label><input id="load" type="number" min="0" step=".1" value="15"></div>
+<div><label for="sun">Peak sun hours/day</label><input id="sun" type="number" min=".1" step=".1" value="4.5"></div>
+</div>
+<div class="grid2">
+<div><label for="offset">Target energy offset (%)</label><input id="offset" type="number" min="0" max="200" step="5" value="100"></div>
+<div><label for="derate">System derating (%)</label><input id="derate" type="number" min="1" max="100" step="1" value="80"></div>
+</div>
+<div class="grid2">
+<div><label for="panelW">Panel rating (W)</label><input id="panelW" type="number" min="1" step="5" value="550"></div>
+<div><label for="inverter">Inverter size (kW)</label><input id="inverter" type="number" min="0" step=".1" value="6"></div>
+</div>
+<div class="grid2">
+<div><label for="roof">Roof / mounting type</label><select id="roof"><option value="metal">Metal roof</option><option value="tile">Tile roof</option><option value="concrete">Concrete roof</option><option value="ground">Ground mount</option></select></div>
+<div><label for="distance">Cable route (one-way metres)</label><input id="distance" type="number" min="0" step="1" value="20"></div>
+</div>
+<label for="battery">Battery storage</label><select id="battery"><option value="none">Grid-tied · no battery</option><option value="5">5 kWh battery</option><option value="10">10 kWh battery</option><option value="15">15 kWh battery</option><option value="20">20 kWh battery</option></select>
+<div class="checkrow"><input id="backup" type="checkbox"><label for="backup" style="margin:0">Include backup / critical-load subpanel</label></div>
+
+<h3>2. Company & quotation details</h3>
+<div class="grid2">
+<div><label for="company">Your company name</label><input id="company" value="Your Engineering Company"></div>
+<div><label for="contact">Contact details</label><input id="contact" value="Phone · Email"></div>
+<div><label for="quoteNo">Quotation number</label><input id="quoteNo" value="SOL-2026-001"></div>
+<div><label for="quoteDate">Quotation date</label><input id="quoteDate" type="date"></div>
+<div><label for="validity">Validity (days)</label><input id="validity" type="number" min="1" value="15"></div>
+<div><label for="paymentTerms">Payment terms</label><input id="paymentTerms" value="50% down payment, balance upon completion"></div>
+</div>
+<h3>3. Unit prices (editable)</h3>
+<p class="hint">Set your own supplier and labor rates. Prices are illustrative starting assumptions, not supplier quotations.</p>
+<div class="grid2">
+<div><label for="panelPrice">Panel (₱/piece)</label><input id="panelPrice" type="number" min="0" value="6500"></div>
+<div><label for="invPrice">Inverter (₱/kW)</label><input id="invPrice" type="number" min="0" value="12500"></div>
+<div><label for="mountPrice">Mounting (₱/panel)</label><input id="mountPrice" type="number" min="0" value="1800"></div>
+<div><label for="dcPrice">DC cable (₱/m)</label><input id="dcPrice" type="number" min="0" value="85"></div>
+<div><label for="acPrice">AC cable (₱/m)</label><input id="acPrice" type="number" min="0" value="95"></div>
+<div><label for="batteryPrice">Battery (₱/kWh)</label><input id="batteryPrice" type="number" min="0" value="28000"></div>
+<div><label for="protection">Protection / BOS allowance (%)</label><input id="protection" type="number" min="0" max="100" value="12"></div>
+<div><label for="labor">Installation labor (%)</label><input id="labor" type="number" min="0" max="100" value="10"></div>
+<div><label for="engineering">Engineering / permits (₱)</label><input id="engineering" type="number" min="0" value="15000"></div>
+<div><label for="contingency">Contingency (%)</label><input id="contingency" type="number" min="0" max="100" value="5"></div>
+<div><label for="overhead">Business overhead (%)</label><input id="overhead" type="number" min="0" max="100" value="5"></div>
+<div><label for="markup">Markup on cost + overhead (%)</label><input id="markup" type="number" min="0" max="300" value="20"></div>
+<div><label for="vat">VAT (%)</label><input id="vat" type="number" min="0" max="20" value="0"></div>
+</div>
+<div class="actions"><button class="primary" id="calculate">Calculate BOQ & estimate</button><button class="secondary" id="reset">Reset defaults</button></div>
+</aside>
+
+<section>
+<div class="panel">
+<div class="section-head"><h2>System summary</h2><span class="small" id="status">Preliminary estimate</span></div>
+<div class="metrics">
+<div class="metric"><div class="label">Recommended PV size</div><div class="value" id="pvSize">—</div></div>
+<div class="metric"><div class="label">Panel quantity</div><div class="value" id="panelCount">—</div></div>
+<div class="metric"><div class="label">Estimated daily energy</div><div class="value" id="dailyEnergy">—</div></div>
+<div class="metric"><div class="label">Customer quote total</div><div class="value" id="totalMetric">—</div></div>
+</div>
+<div class="grid2">
+<div><div class="small">Selected inverter capacity</div><div class="subtotal" id="inverterSummary">—</div></div>
+<div><div class="small">Estimated monthly generation</div><div class="subtotal" id="monthlyEnergy">—</div></div>
+</div>
+<div class="note">Planning tool only. Final design must be checked against site survey, actual load profile, shading, roof structure, utility/interconnection rules, electrical code, equipment datasheets, and licensed professional requirements. Battery sizing is nominal capacity, not guaranteed usable energy or backup duration.</div>
+</div>
+
+<div class="panel" style="margin-top:16px">
+<div class="section-head"><h2>Bill of quantities (BOQ)</h2><span class="small" id="boqCount">—</span></div>
+<div class="tablewrap"><table id="boq"><thead><tr><th>Item</th><th>Description / basis</th><th class="num">Qty</th><th>Unit</th><th class="num">Unit cost</th><th class="num">Amount</th></tr></thead><tbody></tbody><tfoot id="boqFoot"></tfoot></table></div>
+<div class="actions"><button class="dark" id="csv">Export BOQ CSV</button><button class="secondary" id="print">Print full report</button><button class="primary" id="printQuote">Print customer quotation</button></div>
+<p class="small">The BOQ uses allowances for cable lengths and balance-of-system (BOS) protection. Confirm string design, cable sizing, breaker/fuse ratings, earthing, surge protection, isolators, and mounting components before procurement.</p>
+</div>
+<div class="panel" style="margin-top:16px">
+<h2>Estimate breakdown</h2>
+<div class="tablewrap"><table><thead><tr><th>Cost category</th><th class="num">Amount (PHP)</th></tr></thead><tbody id="costBreakdown"></tbody><tfoot><tr><td>Total internal estimated cost</td><td class="num" id="grandTotal">—</td></tr></tfoot></table></div>
+<p class="small" id="disclaimer">Costs exclude any items not expressly included in the BOQ, such as major roof repairs, utility upgrades, taxes, or unusual civil works.</p>
+</div>
+<div class="panel quote-panel" id="quotationPanel" style="margin-top:16px">
+<div class="quote-top">
+<div><h2 id="qCompany">Your Engineering Company</h2><div id="qContact" class="small">Phone · Email</div></div>
+<div style="text-align:right"><h2>CUSTOMER QUOTATION</h2><div id="qNumber" class="small"></div><div id="qDate" class="small"></div></div>
+</div>
+<hr>
+<h3>Prepared for</h3><div id="qCustomer" class="subtotal">Residential Solar Project</div>
+<p id="qIntro">We are pleased to submit our preliminary proposal for the solar photovoltaic installation described below.</p>
+<h3>Proposed system</h3>
+<div id="qSystem"></div>
+<h3>Scope of supply and installation</h3>
+<ul id="qScope"></ul>
+<h3>Commercial offer</h3>
+<div class="tablewrap"><table><thead><tr><th>Description</th><th class="num">Amount (PHP)</th></tr></thead><tbody id="qPriceRows"></tbody><tfoot><tr><td><strong>Total quoted price</strong></td><td class="num" id="qTotal"></td></tr></tfoot></table></div>
+<p id="qValidity" class="small"></p>
+<h3>Terms and notes</h3>
+<ul id="qTerms"></ul>
+<div class="signature"><div>Prepared by: __________________________</div><div>Accepted by: __________________________</div><div>Date: _________________________________</div></div>
+<p class="small">This is a preliminary quotation generated from planning assumptions. Final pricing and design are subject to site inspection, final equipment selection, structural and electrical assessment, and applicable permits and utility requirements.</p>
+</div>
+</section>
+</div>
+</main>
+<footer>Solar Installation Calculator · Estimates are indicative only and should be validated by a qualified solar designer/installer before use for quotation or construction.</footer>
+<script>
+const $=id=>document.getElementById(id);
+const defaults={project:"Residential Solar Project",load:15,sun:4.5,offset:100,derate:80,panelW:550,inverter:6,roof:"metal",distance:20,battery:"none",backup:false,company:"Your Engineering Company",contact:"Phone · Email",quoteNo:"SOL-2026-001",validity:15,paymentTerms:"50% down payment, balance upon completion",panelPrice:6500,invPrice:12500,mountPrice:1800,dcPrice:85,acPrice:95,batteryPrice:28000,protection:12,labor:10,engineering:15000,contingency:5,overhead:5,markup:20,vat:0};
+const money=n=>new Intl.NumberFormat('en-PH',{style:'currency',currency:'PHP',maximumFractionDigits:0}).format(Number.isFinite(n)?n:0);
+const num=(id,min=0)=>Math.max(min,Number($(id).value)||0);
+let lastRows=[],lastCosts={},lastPricing={};
+function calculate(){
+ const load=num('load'), sun=Math.max(.1,num('sun',.1)), offset=num('offset'), derate=Math.max(1,num('derate',1))/100;
+ const panelW=Math.max(1,num('panelW',1)), distance=num('distance');
+ const requiredKW=(load*(offset/100))/(sun*derate);
+ const panelCount=Math.ceil((requiredKW*1000)/panelW);
+ const pvKW=panelCount*panelW/1000;
+ const inverterKW=num('inverter')||Math.ceil(pvKW*10)/10;
+ const daily=pvKW*sun*derate, monthly=daily*30;
+ const batteryKWh=$('battery').value==='none'?0:Number($('battery').value);
+ const roof=$('roof').value;
+ const panelPrice=num('panelPrice'), invPrice=num('invPrice'), mountPrice=num('mountPrice');
+ const dcPrice=num('dcPrice'), acPrice=num('acPrice'), batteryPrice=num('batteryPrice');
+ const protectionPct=num('protection')/100, laborPct=num('labor')/100, contingencyPct=num('contingency')/100;
+ // Practical allowance: cable route x 2 plus 20% slack, split into DC and AC runs.
+ const cableM=Math.ceil(distance*2*1.2);
+ const mountDesc={metal:'Roof mounting kit for metal roof',tile:'Tile-roof hooks / rails allowance',concrete:'Concrete-roof mounting / ballast allowance',ground:'Ground-mount structure allowance'}[roof];
+ const rows=[];
+ function add(item,desc,qty,unit,unitCost){rows.push({item,desc,qty,unit,unitCost,amount:qty*unitCost})}
+ add('Solar PV modules',`${num('panelW')} W module`,panelCount,'pcs',panelPrice);
+ add('PV mounting structure',mountDesc,panelCount,'panel set',mountPrice);
+ add('String inverter',`${inverterKW.toFixed(1)} kW inverter allowance`,1,'lot',inverterKW*invPrice);
+ add('DC solar cable','PV cable allowance incl. routing slack',cableM,'m',dcPrice);
+ add('AC cable','Inverter-to-connection cable allowance',Math.ceil(distance*1.2),'m',acPrice);
+ add('DC isolator / protection','DC isolator, fuses/breakers and enclosure allowance',1,'lot',Math.max(3500,pvKW*1200));
+ add('AC protection & isolator','AC breaker/isolator and enclosure allowance',1,'lot',Math.max(3500,inverterKW*900));
+ add('Surge protection','DC/AC surge protection allowance',1,'lot',Math.max(2500,pvKW*500));
+ add('Earthing & bonding','Grounding conductor, lugs and bonding allowance',1,'lot',Math.max(2500,panelCount*100));
+ add('Conduit / cable tray','Cable containment allowance',Math.ceil(distance*1.2),'m',120);
+ add('Monitoring & labels','Monitoring setup, safety labels and commissioning materials',1,'lot',5000);
+ if(batteryKWh>0){add('Battery storage',`${batteryKWh} kWh nominal battery capacity`,batteryKWh,'kWh',batteryPrice);add('Battery protection / cabling','Battery isolator and interconnect allowance',1,'lot',Math.max(5000,batteryKWh*700));}
+ if($('backup').checked)add('Critical-load subpanel','Backup load panel and changeover/protection allowance',1,'lot',8500);
+ const equipment=rows.reduce((s,r)=>s+r.amount,0);
+ const protection=equipment*protectionPct;
+ if(protection>0)add('Additional BOS allowance',`Allowance ${num('protection')}% of listed equipment`,1,'lot',protection);
+ const laborBase=equipment+protection, labor=laborBase*laborPct;
+ add('Installation labor','Installation, testing and commissioning allowance',1,'lot',labor);
+ add('Engineering / permits','Design, documentation and permit allowance',1,'lot',num('engineering'));
+ const beforeCont=rows.reduce((s,r)=>s+r.amount,0), contingency=beforeCont*contingencyPct;
+ if(contingency>0)add('Contingency',`Allowance ${num('contingency')}%`,1,'lot',contingency);
+ const total=rows.reduce((s,r)=>s+r.amount,0);
+ const overheadAmount=total*num('overhead')/100;
+ const costPlusOverhead=total+overheadAmount;
+ const markupAmount=costPlusOverhead*num('markup')/100;
+ const sellingBeforeVAT=costPlusOverhead+markupAmount;
+ const vatAmount=sellingBeforeVAT*num('vat')/100;
+ const quoteTotal=sellingBeforeVAT+vatAmount;
+ lastPricing={cost:total,overheadAmount,costPlusOverhead,markupAmount,sellingBeforeVAT,vatAmount,quoteTotal};
+ $('pvSize').textContent=pvKW.toFixed(2)+' kWp';
+ $('panelCount').textContent=panelCount.toLocaleString();
+ $('dailyEnergy').textContent=daily.toFixed(1)+' kWh';
+ $('totalMetric').textContent=money(quoteTotal);
+ $('inverterSummary').textContent=inverterKW.toFixed(1)+' kW';
+ $('monthlyEnergy').textContent=Math.round(monthly).toLocaleString()+' kWh/month';
+ $('boqCount').textContent=rows.length+' line items';
+ const tbody=$('boq').querySelector('tbody');tbody.innerHTML='';
+ rows.forEach(r=>{const tr=document.createElement('tr');[r.item,r.desc,r.qty.toLocaleString(),r.unit,money(r.unitCost),money(r.amount)].forEach((v,i)=>{const td=document.createElement('td');td.textContent=v;if(i>=2)td.className='num';tr.appendChild(td)});tbody.appendChild(tr)});
+ const subtotal=rows.filter(r=>!['Additional BOS allowance','Installation labor','Engineering / permits','Contingency'].includes(r.item)).reduce((s,r)=>s+r.amount,0);
+ $('boqFoot').innerHTML=`<tr><td colspan="5">Total estimated project cost</td><td class="num">${money(total)}</td></tr>`;
+ const categories=[
+ ['PV modules',rows.filter(r=>r.item==='Solar PV modules').reduce((s,r)=>s+r.amount,0)],
+ ['Inverter',rows.filter(r=>r.item==='String inverter').reduce((s,r)=>s+r.amount,0)],
+ ['Mounting',rows.filter(r=>r.item==='PV mounting structure').reduce((s,r)=>s+r.amount,0)],
+ ['Electrical BOS & accessories',rows.filter(r=>!['Solar PV modules','String inverter','PV mounting structure','Additional BOS allowance','Installation labor','Engineering / permits','Contingency'].includes(r.item)).reduce((s,r)=>s+r.amount,0)],
+ ['Additional BOS allowance',rows.filter(r=>r.item==='Additional BOS allowance').reduce((s,r)=>s+r.amount,0)],
+ ['Installation labor',labor],['Engineering / permits',num('engineering')],['Contingency',contingency]
+ ];
+ $('costBreakdown').innerHTML=categories.map(([name,amt])=>`<tr><td>${name}</td><td class="num">${money(amt)}</td></tr>`).join('');
+ $('grandTotal').textContent=money(total);
+ // Internal cost breakdown is kept separate from the customer-facing quotation.
+ categories.push(['Business overhead',overheadAmount],['Markup / gross profit',markupAmount],['VAT',vatAmount],['Customer selling price',quoteTotal]);
+ $('costBreakdown').innerHTML=categories.map(([name,amt])=>`<tr><td>${name}</td><td class="num">${money(amt)}</td></tr>`).join('');
+ $('grandTotal').textContent=money(total);
+ renderQuotation({pvKW,panelCount,daily,monthly,inverterKW,batteryKWh,quoteTotal,sellingBeforeVAT,vatAmount,overheadAmount,markupAmount,total});
+ $('status').textContent=($('project').value||'Project')+' · preliminary';
+ lastRows=rows;lastCosts={total,pvKW,panelCount,daily,monthly,inverterKW,batteryKWh};
+}
+function renderQuotation(d){
+ const text=id=>($(id).value||'').trim();
+ $('qCompany').textContent=text('company')||'Your Engineering Company';
+ $('qContact').textContent=text('contact');
+ $('qNumber').textContent='Quotation No.: '+text('quoteNo');
+ const dateValue=text('quoteDate');
+ const quoteDate=dateValue?new Date(dateValue+'T12:00:00'):new Date();
+ $('qDate').textContent='Date: '+quoteDate.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'});
+ $('qCustomer').textContent=text('project')||'Customer / project';
+ const roofNames={metal:'metal roof',tile:'tile roof',concrete:'concrete roof',ground:'ground mount'};
+ $('qSystem').textContent=`${d.pvKW.toFixed(2)} kWp solar PV array using ${num('panelW')} W modules (${d.panelCount} modules), ${d.inverterKW.toFixed(1)} kW inverter, ${d.batteryKWh?d.batteryKWh+' kWh nominal battery storage':'no battery storage'}, ${roofNames[$('roof').value]}. Estimated generation: ${d.daily.toFixed(1)} kWh/day or ${Math.round(d.monthly).toLocaleString()} kWh/month under entered assumptions.`;
+ const scope=[
+ `${d.panelCount} solar PV modules and mounting structure appropriate for the selected installation type`,
+ `${d.inverterKW.toFixed(1)} kW inverter allowance and associated DC/AC cabling`,
+ 'Electrical protection, isolators, surge protection, earthing/bonding, cable containment, labels and monitoring allowance',
+ 'Installation, testing and commissioning allowance',
+ 'Engineering / permit allowance as priced in this estimate'
+ ];
+ if(d.batteryKWh)scope.push(`${d.batteryKWh} kWh nominal battery storage with battery protection/cabling allowance`);
+ if($('backup').checked)scope.push('Critical-load subpanel and changeover/protection allowance');
+ $('qScope').innerHTML=scope.map(x=>'<li>'+escapeHTML(x)+'</li>').join('');
+ const priceRows=[['Supply, installation, testing and commissioning',d.sellingBeforeVAT]];
+ if(d.vatAmount>0)priceRows.push([`VAT (${num('vat')}%)`,d.vatAmount]);
+ $('qPriceRows').innerHTML=priceRows.map(([label,amt])=>`<tr><td>${escapeHTML(label)}</td><td class="num">${money(amt)}</td></tr>`).join('');
+ $('qTotal').textContent=money(d.quoteTotal);
+ const validity=Math.max(1,num('validity',1));
+ const expiry=new Date(quoteDate);expiry.setDate(expiry.getDate()+validity);
+ $('qValidity').textContent=`Quotation valid for ${validity} days, until ${expiry.toLocaleDateString('en-PH',{year:'numeric',month:'long',day:'numeric'})}.`;
+ const terms=[`Payment terms: ${text('paymentTerms')||'To be agreed.'}`,
+ 'Final scope, equipment brands/models, installation schedule and warranty conditions to be confirmed in the formal agreement.',
+ 'Excludes major roof repairs, utility service upgrades, unusual civil works, and fees or taxes not expressly included above.',
+ 'PV generation is an estimate and varies with weather, shading, orientation, soiling and system availability.',
+ 'Battery capacity is nominal; backup duration depends on usable capacity, inverter limits and actual critical loads.'];
+ $('qTerms').innerHTML=terms.map(x=>'<li>'+escapeHTML(x)+'</li>').join('');
+}
+function escapeHTML(value){return String(value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));}
+$('calculate').addEventListener('click',calculate);
+$('print').addEventListener('click',()=>{document.body.classList.remove('quote-print');calculate();window.print()});
+$('printQuote').addEventListener('click',()=>{calculate();document.body.classList.add('quote-print');window.print();document.body.classList.remove('quote-print')});
+$('csv').addEventListener('click',()=>{
+ calculate();
+ const q=v=>'"'+String(v??'').replace(/"/g,'""')+'"';
+ const lines=[['Project',$('project').value],['PV size (kWp)',lastCosts.pvKW.toFixed(2)],['Panels',lastCosts.panelCount],['Daily generation estimate (kWh)',lastCosts.daily.toFixed(2)],['Monthly generation estimate (kWh)',lastCosts.monthly.toFixed(0)],[],['Item','Description / basis','Qty','Unit','Unit cost PHP','Amount PHP']];
+ lastRows.forEach(r=>lines.push([r.item,r.desc,r.qty,r.unit,r.unitCost.toFixed(2),r.amount.toFixed(2)]));
+ lines.push([],['TOTAL ESTIMATED PROJECT COST','','','','',lastCosts.total.toFixed(2)]);
+ const csv=lines.map(row=>row.map(q).join(',')).join('\r\n');
+ const blob=new Blob(['\ufeff'+csv],{type:'text/csv;charset=utf-8;'});
+ const url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='solar_boq_estimate.csv';a.click();URL.revokeObjectURL(url);
+});
+$('reset').addEventListener('click',()=>{for(const [id,val] of Object.entries(defaults)){const el=$(id);if(!el)continue;if(el.type==='checkbox')el.checked=val;else el.value=val;}calculate()});
+if(!$('quoteDate').value){const today=new Date();$('quoteDate').value=`${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;}
+document.querySelectorAll('input,select').forEach(el=>{if(!['project','company','contact','quoteNo','quoteDate','validity','paymentTerms'].includes(el.id))el.addEventListener('change',calculate);});
+['project','company','contact','quoteNo','quoteDate','validity','paymentTerms'].forEach(id=>$(id).addEventListener('change',calculate));
+calculate();
+</script>
+</body>
+</html>
